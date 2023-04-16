@@ -1,0 +1,73 @@
+import numpy as np
+from collections import Counter
+
+def euclidean_distance(x1,x2):
+    return np.sqrt(np.sum((x1-x2)**2))
+
+class KNN():
+    def __init__(self, k=3) -> None:
+        self.k = k
+    def fit(self,X,y):
+        self.X_train = X
+        self.y_train = y
+    def predict(self,X):
+        # truyền x cần dự đoán vào và tính tất cả các x rồi trả về một 
+        # mảng label tương ứng
+        label_pre = [self._predict(x) for x in X]
+       # chuyển các list predict thành magr array
+        return np.array(label_pre)
+
+    def _predict(self,x):
+        distance = [euclidean_distance(x,x_train) for x_train in self.X_train]
+        # trả về một mảng các khoảng các từ x đến x_train
+        sort_dis = np.argsort(distance)[:self.k]
+        # sắp các chỉ mục có khoảng cách nhỏ nhất đến lớn nhất
+        # và lấy số k gần nhất
+        labels = [self.y_train[i] for i in sort_dis]
+        # dùng để lấy các nhán có khoảng cách gần nhất bằng cách\
+        # truyền chỉ mục của các
+        label_count = Counter(labels).most_common(1)
+        # Counter là để đếm số lần xuất hiện của nhãn
+        # phương thức most_common truyền vào là một số nguyên trong trường hợp này chỉ 
+        #cần truyền một vì chúng ta chỉ cần lấy một label
+        return label_count[0][0]
+    
+import numpy as np
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+# Tạo dữ liệu giả lập
+X, y = make_classification(n_samples=100, n_features=10, n_classes=2, random_state=42)
+
+# Chia dữ liệu thành tập huấn luyện và tập kiểm tra
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Khởi tạo mô hình KNN
+knn = KNN(k=10)
+
+# Huấn luyện mô hình trên tập huấn luyện
+knn.fit(X_train, y_train)
+
+# Dự đoán nhãn cho tập kiểm tra
+y_pred = knn.predict(X_test)
+
+# Tính độ chính xác của mô hình
+accuracy = accuracy_score(y_test, y_pred)
+
+# In kết quả
+print("Accuracy:", accuracy)
+
+# import matplotlib.pyplot as plt
+
+# biểu diễn các điểm dữ liệu trong tập huấn luyện
+# plt.scatter(X_train[:, 0], X_train[:, 1], c=y_train, cmap='viridis')
+# plt.xlabel('Sepal length')
+# plt.ylabel('Sepal width')
+# plt.show()
+
+# # biểu diễn các điểm dữ liệu trong tập kiểm tra
+# plt.scatter(X_test[:, 0], X_test[:, 1], c=y_test, cmap='viridis')
+# plt.xlabel('Sepal length')
+# plt.ylabel('Sepal width')
+# plt.show()
